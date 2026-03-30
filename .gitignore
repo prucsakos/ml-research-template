@@ -1,0 +1,49 @@
+# Environment and secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test logs
+test_logs/
+
+# Data (add exceptions as needed)
+data/raw/
+data/processed/
+*.h5
+*.hdf5
+
+# Large model files
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Experiment results (track selectively)
+experiments/*/results/*.pt
+experiments/*/results/*.ckpt
+experiments/*/results/*.safetensors
