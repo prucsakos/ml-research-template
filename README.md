@@ -3,6 +3,8 @@
   <p align="center">
     A batteries-included project template for long-running ML research with autonomous AI agents.
     <br />
+    Based on <a href="https://www.anthropic.com/research/long-running-Claude"><strong>Tips for Long-Running Claude Sessions</strong></a> by Anthropic.
+    <br /><br />
     <a href="#getting-started"><strong>Get Started</strong></a>
     &middot;
     <a href="#project-structure"><strong>Structure</strong></a>
