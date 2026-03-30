@@ -84,6 +84,18 @@ run_ralph() {
 
         echo "$OUTPUT"
 
+        # Check for rate limit / usage cap errors and wait if hit
+        if echo "$OUTPUT" | grep -qiE 'rate.?limit|usage.?limit|too many requests|overloaded|429|capacity|quota'; then
+            WAIT_SECONDS=3600  # 1 hour
+            echo ""
+            echo "=== RATE LIMIT DETECTED at iteration $i ==="
+            echo "Waiting ${WAIT_SECONDS}s (1 hour) before retrying... [$(date -Iseconds)]"
+            sleep "$WAIT_SECONDS"
+            # Retry the same iteration (decrement so the for-loop re-runs it)
+            i=$((i - 1))
+            continue
+        fi
+
         # Check for completion promise
         if echo "$OUTPUT" | grep -q '<promise>DONE</promise>'; then
             echo ""
