@@ -9,6 +9,37 @@ ground truth, targets, architecture — lives in **DESIGN.md**.
 - **Project context**: `DESIGN.md` (read this first)
 - **Progress log**: `PROGRESS.md`
 - **Experiments**: `experiments/`
+- **API tokens**: `.env` (never commit this file)
+
+## Environment and secrets
+
+API tokens are stored in `.env` in the project root. Load them with:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+Or in shell scripts:
+
+```bash
+source .env
+```
+
+Document the variables your project uses in `.env.example` (committed, no values).
+
+**Rules:**
+- `.env` is in `.gitignore`. Never commit it.
+- Never hardcode tokens in source code.
+- Scripts that need tokens must load them from `.env` or environment variables.
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+---
 
 ## Directory structure
 
@@ -210,6 +241,13 @@ Beyond "write code" agents, use specialized agents for distinct concerns:
   in sync with actual code.
 - **Literature agent**: Reviews related work, checks if methods align with
   state-of-the-art, flags relevant new papers.
+- **Research agent**: The scientific lead. Does not write code. Runs the
+  introspection protocol after each experiment — questions why results look
+  the way they do, hunts for counterexamples, and rules out trivial
+  explanations. Synthesizes findings across experiments to connect dots,
+  refine hypotheses, and set research direction based on information gain.
+  Maintains the paper narrative and acts as a quality gate: no result enters
+  the paper until this agent has interrogated it.
 
 ---
 
@@ -264,6 +302,33 @@ Every result must be traceable back to the exact code and config that produced i
 - Track which experiment each figure comes from in a comment at the top of
   the figure script (e.g., `# Source: exp_003_dropout_ablation`).
 
+### Results reproducibility file
+
+All experimental results referenced in the paper must be recorded in
+`paper/results.tex` (included by `main.tex` via `\input{results}`).
+This file serves as the single source of truth for all reported numbers.
+
+**Each result entry must include:**
+- The git commit hash that produced the result.
+- The exact reproduction command (`run.sh` path or CLI invocation).
+- The experiment folder it came from.
+
+Format:
+```latex
+% --- exp_001_baseline ---
+% Commit: a1b2c3d
+% Reproduce: cd experiments/exp_001_baseline && bash run.sh
+\newcommand{\expOneAccuracy}{94.2\%}
+\newcommand{\expOneF1}{0.91}
+```
+
+**Rules:**
+- Never hardcode numbers in `main.tex`. Always use commands defined in
+  `results.tex` (e.g., `\expOneAccuracy`).
+- When results update, update `results.tex` with the new commit hash and
+  values. The paper body stays unchanged.
+- This ensures every number in the paper is traceable to a specific commit.
+
 ---
 
 ## Coding conventions
@@ -313,6 +378,62 @@ Test with varied configurations:
 - Different dataset sizes / splits
 - Perturbed hyperparameters (±20% from default)
 - Edge cases specific to your domain
+
+---
+
+## Research introspection
+
+After completing an experiment or answering a research question, do not
+move on immediately. Stop and interrogate your own findings.
+
+### When a hypothesis is confirmed or denied
+
+1. **Ask why.** Do not accept a result at face value. Ask: *Why did this
+   happen?* Is there a mechanistic explanation, or is the result merely
+   correlational? Could there be a confound?
+2. **Look for counterexamples.** If H1 is confirmed, find the models or
+   conditions where it almost fails. If H2 is denied, find the subset
+   where it does hold. Boundary cases are more informative than averages.
+3. **Check if the answer is trivial.** Could the result be explained by a
+   simpler mechanism? Rule out trivial explanations before claiming a
+   non-trivial finding.
+4. **Quantify surprise.** How much does this result deviate from the prior
+   expectation? A barely-significant confirmation is less interesting than
+   a strong rejection. Record the effect size, not just significance.
+
+### When a research question is answered
+
+1. **Challenge the answer.** What would change if the benchmark were
+   different? If the evaluation set were larger? If the models were
+   evaluated on a different task type?
+2. **Identify what you still don't know.** Every answered question reveals
+   gaps. What assumption did you rely on that remains untested?
+3. **Generate follow-up questions.** After confirming or denying each
+   hypothesis, produce 2-3 new questions that are:
+   - **Relevant** — they follow directly from the finding.
+   - **Interesting** — they challenge or deepen the result.
+   - **Important** — answering them would change how the results are interpreted.
+
+### Recording introspection
+
+Document all introspection in PROGRESS.md under a dedicated section per
+experiment or research question:
+
+```markdown
+## Introspection: <hypothesis or question>
+- **Finding:** Confirmed / Denied / Partially confirmed
+- **Why this result:** <mechanistic explanation or hypothesis>
+- **Counterexamples:** <conditions where it breaks down>
+- **Trivial explanation ruled out?** Yes/No — <reasoning>
+- **Effect size:** <quantified>
+- **Follow-up questions:**
+  1. <new question>
+  2. <new question>
+  3. <new question>
+```
+
+Also update DESIGN.md to append newly generated questions under a
+`## Emergent research questions` section, so future sessions can see them.
 
 ---
 
