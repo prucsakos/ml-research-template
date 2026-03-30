@@ -1,28 +1,12 @@
-# [Project Name] Development Guide
+# Development Rules
 
-## What is this?
-
-<!-- Fill in: 1-2 sentence description of the research project -->
-
-Full architecture and research design details are in **DESIGN.md**. This file covers
-development instructions and conventions.
-
-## Research scope
-
-<!-- Fill in for each project -->
-
-- **Research question(s):**
-- **Hypotheses:**
-- **Oracle / ground truth:** <!-- e.g., known-good reference implementation, established benchmark, analytical solution -->
-- **Success criteria / accuracy targets:**
-
-| Target | Metric | Threshold |
-|--------|--------|-----------|
-| <!-- e.g., Baseline reproduction --> | <!-- e.g., F1 score --> | <!-- e.g., within 1% of reference --> |
+This file contains development conventions and rules for autonomous agents.
+It is project-agnostic. All project-specific context — goals, hypotheses,
+ground truth, targets, architecture — lives in **DESIGN.md**.
 
 ## Quick reference
 
-- **Design document**: `DESIGN.md` (read this first)
+- **Project context**: `DESIGN.md` (read this first)
 - **Progress log**: `PROGRESS.md`
 - **Experiments**: `experiments/`
 
@@ -30,8 +14,8 @@ development instructions and conventions.
 
 ```
 project/
-├── CLAUDE.md              # Development guide and conventions (this file)
-├── DESIGN.md              # Research design, hypotheses, methodology
+├── CLAUDE.md              # Development rules and conventions (this file)
+├── DESIGN.md              # Research design, hypotheses, methodology, targets
 ├── PROGRESS.md            # Running log of findings, decisions, failed approaches
 ├── README.md              # Public-facing description for publication/sharing
 ├── LICENSE
@@ -57,26 +41,22 @@ project/
 ## Orientation (read this first when starting a session)
 
 When you start a new session, orient yourself:
-1. Read `PROGRESS.md` to see what's done and what's next.
-2. Run `pytest tests/ -v --fast 2>&1 | tail -20` to see current test status.
-3. Pick the next failing test or unchecked item from PROGRESS.md.
-4. When you finish a unit of work, update PROGRESS.md before stopping.
+1. Read `DESIGN.md` to understand the project goals, ground truth, and targets.
+2. Read `PROGRESS.md` to see what's done and what's next.
+3. Run `pytest tests/ -v --fast 2>&1 | tail -20` to see current test status.
+4. Pick the next failing test or unchecked item from PROGRESS.md.
+5. When you finish a unit of work, update PROGRESS.md before stopping.
 
 ---
 
 ## Principles for autonomous development
 
-### 1. Define your ground truth — tests are everything
+### 1. Ground truth and tests are everything
 
-Every research project has some form of ground truth, even if imperfect:
-- **Oracle**: A known-good reference implementation, analytical solution, or
-  established benchmark to match against.
-- **Hypothesis-driven**: Expected behaviors, statistical properties, or
-  invariants derived from your research hypotheses.
-- **Sanity checks**: Boundary conditions, conservation laws, known edge cases,
-  or reproducing published results.
-
-<!-- Fill in: what serves as ground truth for this project? -->
+Every research project has some form of ground truth. It is defined in
+DESIGN.md and may be an oracle (reference implementation, analytical solution,
+benchmark), hypothesis-driven assertions, or sanity checks. Refer to DESIGN.md
+for what applies to this project.
 
 The test harness is the most important part of the project. If the tests are
 wrong or incomplete, agents will solve the wrong problem.
@@ -90,7 +70,7 @@ wrong or incomplete, agents will solve the wrong problem.
   write clear verifiers, and watch for failure modes so you can add targeted tests.
 - When a discrepancy is found, trace upstream through the pipeline to find the
   first module where things diverge. Fix there; downstream improves automatically.
-- When no oracle exists, encode your hypotheses as testable assertions. A test
+- When no oracle exists, encode hypotheses as testable assertions. A test
   that checks "model output has property X under condition Y" is more valuable
   than no test at all.
 
@@ -219,8 +199,6 @@ it's a critical coordination mechanism.
 
 Beyond "write code" agents, use specialized agents for distinct concerns:
 
-<!-- Adjust to your project's needs. Common roles: -->
-
 - **Implementer agents**: Write module code to pass tests.
 - **Test quality agent**: Reviews and improves the test harness. Adds edge
   cases, improves error messages, catches gaps in coverage.
@@ -300,8 +278,6 @@ Every result must be traceable back to the exact code and config that produced i
 - **Reproducibility by default**. Every script that involves randomness
   must accept a seed parameter and set it explicitly.
 
-<!-- Add project-specific conventions below -->
-
 ---
 
 ## Testing and debugging workflow
@@ -338,17 +314,15 @@ Test with varied configurations:
 - Perturbed hyperparameters (±20% from default)
 - Edge cases specific to your domain
 
-<!-- Add project-specific testing notes below -->
-
 ---
 
 ## Progress tracking
 
 The three key documents serve distinct roles:
 
-- **CLAUDE.md** (this file): Stable rules and conventions. Rarely changes.
-- **DESIGN.md**: Research design, hypotheses, methodology, architecture.
-  Updated when the research direction evolves.
+- **CLAUDE.md** (this file): Stable rules and conventions. Project-agnostic.
+- **DESIGN.md**: Project-specific context — research questions, hypotheses,
+  ground truth, targets, architecture. Updated when the research direction evolves.
 - **PROGRESS.md**: Living log of what's done, what's next, what failed.
   Updated after every unit of work.
 
@@ -405,7 +379,7 @@ git diff HEAD~5                            # last 5 commits of changes
 The prompt file (`PROMPT.md`) is the task definition fed each iteration.
 It must include:
 - Clear task description with success criteria.
-- Instruction to read CLAUDE.md and PROGRESS.md.
+- Instruction to read DESIGN.md and PROGRESS.md.
 - A completion promise: `<promise>DONE</promise>` that the agent outputs
   only when the task is truly finished to specification.
 

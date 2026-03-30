@@ -6,7 +6,8 @@
 
 <!-- Describe the task clearly. Be specific about success criteria. -->
 
-Read CLAUDE.md for project conventions. Read PROGRESS.md for current status.
+Read DESIGN.md for project goals and targets. Read CLAUDE.md for development
+rules. Read PROGRESS.md for current status.
 
 Pick up where you left off:
 1. Check PROGRESS.md for what's done and what's next.
