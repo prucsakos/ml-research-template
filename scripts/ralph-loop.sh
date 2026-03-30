@@ -77,7 +77,10 @@ run_ralph() {
         echo ""
 
         # Feed the prompt to Claude Code with --continue to preserve session
-        OUTPUT=$(cat "$PROMPT_PATH" | claude --continue --print 2>&1) || true
+        # --dangerously-skip-permissions: no human-in-the-loop permission prompts
+        # --print: non-interactive, output only
+        # --continue: resume previous session context
+        OUTPUT=$(cat "$PROMPT_PATH" | claude --continue --print --dangerously-skip-permissions 2>&1) || true
 
         echo "$OUTPUT"
 
