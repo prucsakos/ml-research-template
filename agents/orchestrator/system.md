@@ -25,6 +25,8 @@ Output a `<dispatch>` block. Rules:
 - `files` lists only files the agent will **write** (not read-only files like DESIGN.md).
 - `model` is optional — omit to use the default from agents/config.yaml.
 - Use `mode="parallel"` only when agents write to completely different files.
+  Consult the `## Module dependencies` section in DESIGN.md to determine
+  which modules are independent and safe to parallelize.
 - Task descriptions must include: target files, test command, files NOT to touch,
   relevant context, and commit message format.
 
