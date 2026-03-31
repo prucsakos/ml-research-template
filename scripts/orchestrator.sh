@@ -24,6 +24,7 @@ source "$SCRIPT_DIR/lib/dispatch.sh"
 
 # --- Defaults ---
 MAX_ITERATIONS=20
+FORCE_ALL=false
 USE_TMUX=false
 TMUX_SESSION="orchestrator"
 CONFIG_FILE="$PROJECT_DIR/agents/config.yaml"
@@ -33,16 +34,18 @@ AGENT_TIMEOUT_SECONDS="${AGENT_TIMEOUT_SECONDS:-1800}"
 
 # --- Parse args ---
 usage() {
-    echo "Usage: $0 [-n max_iterations] [-s] [-t session_name] [-h]"
+    echo "Usage: $0 [-n max_iterations] [-f] [-s] [-t session_name] [-h]"
     echo "  -n  Max iterations (default: $MAX_ITERATIONS)"
+    echo "  -f  Force all N iterations (ignore completion promise)"
     echo "  -s  Run inside a new tmux session"
     echo "  -t  tmux session name (default: $TMUX_SESSION)"
     exit 1
 }
 
-while getopts "n:st:h" opt; do
+while getopts "n:fst:h" opt; do
     case $opt in
         n) MAX_ITERATIONS="$OPTARG" ;;
+        f) FORCE_ALL=true ;;
         s) USE_TMUX=true ;;
         t) TMUX_SESSION="$OPTARG" ;;
         h) usage ;;
@@ -212,6 +215,7 @@ run_orchestrator() {
     echo "Project:     $PROJECT_DIR"
     echo "Prompt:      $PROMPT_FILE"
     echo "Max iter:    $MAX_ITERATIONS"
+    echo "Force all:   $FORCE_ALL"
     echo "Orch model:  $ORCHESTRATOR_MODEL"
     echo "Agent timeout: ${AGENT_TIMEOUT_SECONDS}s"
     echo "Started:     $(date -Iseconds)"
@@ -240,8 +244,8 @@ run_orchestrator() {
             continue  # retry same iteration (while loop, not for loop)
         fi
 
-        # 3. Completion check
-        if echo "$output" | grep -q '<promise>DONE</promise>'; then
+        # 3. Completion check (skip if -f flag is set)
+        if [[ "$FORCE_ALL" == false ]] && echo "$output" | grep -q '<promise>DONE</promise>'; then
             echo ""
             echo "=== DONE at iteration $iteration [$(date -Iseconds)] ==="
             exit 0
@@ -300,8 +304,10 @@ for i in range(len(agents)):
 if [[ "$USE_TMUX" == true ]]; then
     echo "Launching orchestrator in tmux session: $TMUX_SESSION"
     echo "Detach: Ctrl-b d  |  Reattach: tmux attach -t $TMUX_SESSION"
+    FORCE_FLAG=""
+    [[ "$FORCE_ALL" == true ]] && FORCE_FLAG="-f"
     tmux new-session -d -s "$TMUX_SESSION" \
-        "cd $PROJECT_DIR && bash $0 -n $MAX_ITERATIONS; exec bash"
+        "cd $PROJECT_DIR && bash $0 -n $MAX_ITERATIONS $FORCE_FLAG; exec bash"
     tmux attach -t "$TMUX_SESSION"
 else
     run_orchestrator
