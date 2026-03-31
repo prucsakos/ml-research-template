@@ -54,6 +54,7 @@ done
 [[ ! -f "$PROMPT_FILE" ]]           && echo "ERROR: PROMPT.md not found: $PROMPT_FILE" && exit 1
 [[ ! -f "$CONFIG_FILE" ]]           && echo "ERROR: agents/config.yaml not found: $CONFIG_FILE" && exit 1
 [[ ! -f "$ORCHESTRATOR_SYSTEM" ]]   && echo "ERROR: agents/orchestrator/system.md not found" && exit 1
+python3 -c "import yaml" 2>/dev/null || { echo "ERROR: pyyaml is required — pip install pyyaml"; exit 1; }
 
 ORCHESTRATOR_MODEL=$(load_model_for_role "orchestrator" "$CONFIG_FILE")
 [[ -z "$ORCHESTRATOR_MODEL" ]] && echo "ERROR: 'orchestrator' role not found in agents/config.yaml" && exit 1
@@ -232,7 +233,7 @@ run_orchestrator() {
         echo "$output"
 
         # 2. Rate limit check
-        if echo "$output" | grep -qiE 'rate.?limit|usage.?limit|too many requests|overloaded|429|capacity|quota'; then
+        if echo "$output" | grep -qiE 'rate.?limit|usage.?limit|hit.?your.?limit|too many requests|overloaded|429|capacity|quota'; then
             echo ""
             echo "=== RATE LIMIT at iteration $iteration — waiting 1 hour ==="
             sleep 3600
