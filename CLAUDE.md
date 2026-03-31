@@ -505,3 +505,27 @@ It must include:
   only when the task is truly finished to specification.
 
 See the template `PROMPT.md` in the project root.
+
+### Parallel orchestrator
+
+For multi-agent work where tasks can be parallelized:
+
+```bash
+# Edit PROMPT.md with your task and completion criteria
+# Then launch:
+./scripts/orchestrator.sh                    # default: 20 iterations
+./scripts/orchestrator.sh -n 50             # more iterations
+./scripts/orchestrator.sh -s                # inside tmux (for HPC/detached use)
+./scripts/orchestrator.sh -s -t my_session  # custom tmux session name
+
+# Tune per-agent timeout (default: 1800s):
+AGENT_TIMEOUT_SECONDS=3600 ./scripts/orchestrator.sh
+```
+
+The orchestrator runs on sonnet. Specialist agents (implementer, test-quality,
+performance, documentation, literature, research) are dispatched in parallel
+when tasks are file-disjoint, or sequentially otherwise.
+
+Configure models in `agents/config.yaml`. Add project-specific context to
+`agents/orchestrator/system.md`. Ensure `DESIGN.md` has a `## Module dependencies`
+section so the orchestrator can reason about what is safe to parallelize.
