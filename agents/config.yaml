@@ -1,0 +1,10 @@
+# agents/config.yaml
+# Default model per agent role.
+# Override per-dispatch via the model="" attribute in <dispatch> XML.
+orchestrator: claude-sonnet-4-6
+implementer:  claude-haiku-4-5-20251001
+test-quality: claude-haiku-4-5-20251001
+performance:  claude-sonnet-4-6
+documentation: claude-haiku-4-5-20251001
+literature:   claude-opus-4-6
+research:     claude-opus-4-6
