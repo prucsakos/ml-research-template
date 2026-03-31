@@ -60,8 +60,8 @@ PROMPT_PATH="$PROJECT_DIR/$PROMPT_FILE"
 if [[ ! -f "$PROMPT_PATH" ]]; then
     echo "ERROR: Prompt file not found: $PROMPT_PATH"
     echo ""
-    echo "Create a PROMPT.md in the project root with your task description."
-    echo "Include the line: 'When finished, output <promise>DONE</promise>'"
+    echo "PROMPT.md should exist in the project root (it is the workflow skeleton)."
+    echo "Define your goals and success criteria in DESIGN.md instead."
     exit 1
 fi
 

@@ -57,5 +57,5 @@ For sequential work:
 Write a PROGRESS.md update: what was dispatched, what status each returned, what's next.
 
 ## Completion
-Output `<promise>DONE</promise>` only when every success criterion in PROMPT.md
+Output `<promise>DONE</promise>` only when every success criterion in DESIGN.md
 is satisfied and PROGRESS.md is fully up to date.

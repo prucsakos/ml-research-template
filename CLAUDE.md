@@ -77,6 +77,7 @@ When you start a new session, orient yourself:
 3. Run `pytest tests/ -v --fast 2>&1 | tail -20` to see current test status.
 4. Pick the next failing test or unchecked item from PROGRESS.md.
 5. When you finish a unit of work, update PROGRESS.md before stopping.
+6. When all DESIGN.md success criteria are met, output `<promise>DONE</promise>`.
 
 ---
 
@@ -471,48 +472,14 @@ The three key documents serve distinct roles:
 
 ## Long-running autonomous sessions
 
-For multi-day autonomous work, use the Ralph loop pattern. The same prompt is
-fed to Claude repeatedly; each iteration sees its own previous work in files
-and git history, building incrementally toward the goal.
+For multi-day autonomous work, the orchestrator dispatches specialist agents
+in parallel (via git worktrees) or sequentially, looping until all success
+criteria in DESIGN.md are met.
 
 ### Running
 
 ```bash
-# Edit PROMPT.md with your task and completion criteria
-# Then launch:
-./scripts/ralph-loop.sh                    # default: 20 iterations
-./scripts/ralph-loop.sh -n 50             # more iterations
-./scripts/ralph-loop.sh -s                 # inside tmux (for HPC/detached use)
-./scripts/ralph-loop.sh -s -t my_session   # custom tmux session name
-```
-
-### Remote monitoring
-
-Because agents commit and push after every unit of work, you can monitor
-progress remotely via git history:
-```bash
-git log --oneline -20                      # recent commits
-git diff HEAD~5                            # last 5 commits of changes
-```
-
-### PROMPT.md
-
-The prompt file (`PROMPT.md`) is the task definition fed each iteration.
-It must include:
-- Clear task description with success criteria.
-- Instruction to read DESIGN.md and PROGRESS.md.
-- A completion promise: `<promise>DONE</promise>` that the agent outputs
-  only when the task is truly finished to specification.
-
-See the template `PROMPT.md` in the project root.
-
-### Parallel orchestrator
-
-For multi-agent work where tasks can be parallelized:
-
-```bash
-# Edit PROMPT.md with your task and completion criteria
-# Then launch:
+# Define your goals and success criteria in DESIGN.md, then launch:
 ./scripts/orchestrator.sh                    # default: 20 iterations
 ./scripts/orchestrator.sh -n 50             # more iterations
 ./scripts/orchestrator.sh -s                # inside tmux (for HPC/detached use)
@@ -522,10 +489,28 @@ For multi-agent work where tasks can be parallelized:
 AGENT_TIMEOUT_SECONDS=3600 ./scripts/orchestrator.sh
 ```
 
-The orchestrator runs on sonnet. Specialist agents (implementer, test-quality,
-performance, documentation, literature, research) are dispatched in parallel
-when tasks are file-disjoint, or sequentially otherwise.
-
 Configure models in `agents/config.yaml`. Add project-specific context to
 `agents/orchestrator/system.md`. Ensure `DESIGN.md` has a `## Module dependencies`
 section so the orchestrator can reason about what is safe to parallelize.
+
+For simpler single-agent work, use the Ralph loop directly:
+
+```bash
+./scripts/ralph-loop.sh                    # default: 20 iterations
+./scripts/ralph-loop.sh -n 50             # more iterations
+./scripts/ralph-loop.sh -s                 # inside tmux (for HPC/detached use)
+```
+
+### Completion signal
+
+When all success criteria in DESIGN.md are satisfied and PROGRESS.md is fully
+up to date, output `<promise>DONE</promise>`. The loop scripts detect this
+signal and stop. Do not output it until the work is truly finished.
+
+### Remote monitoring
+
+Agents commit and push after every unit of work. Monitor progress remotely:
+```bash
+git log --oneline -20                      # recent commits
+git diff HEAD~5                            # last 5 commits of changes
+```

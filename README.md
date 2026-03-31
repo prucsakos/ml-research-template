@@ -48,10 +48,10 @@ pip install -r requirements.txt  # customize for your project
 
 ### Customize for your project
 
-1. **`CLAUDE.md`** &mdash; Fill in the `<!-- Fill in -->` sections: research questions, hypotheses, ground truth, accuracy targets, and project-specific conventions.
-2. **`DESIGN.md`** &mdash; Write your research design, methodology, and architecture.
-3. **`PROGRESS.md`** &mdash; Initialize with your first tasks.
-4. **`PROMPT.md`** &mdash; Define the task for autonomous agent loops.
+1. **`DESIGN.md`** &mdash; Write your research design, goals, success criteria, methodology, and architecture. This is the main file you edit.
+2. **`CLAUDE.md`** &mdash; Development conventions for agents. Generally leave as-is.
+3. **`PROGRESS.md`** &mdash; Agents maintain this automatically. Optionally seed with initial tasks.
+4. **`PROMPT.md`** &mdash; Workflow skeleton for agent loops. No need to edit.
 
 ---
 
@@ -88,7 +88,7 @@ project/
 | `CLAUDE.md` | Stable rules and conventions | Rarely |
 | `DESIGN.md` | Research design and methodology | When direction evolves |
 | `PROGRESS.md` | What's done, what's next, what failed | After every unit of work |
-| `PROMPT.md` | Autonomous agent task definition | Per task |
+| `PROMPT.md` | Workflow skeleton for agent loops | Rarely (if ever) |
 
 ---
 
@@ -109,7 +109,7 @@ feeds the same prompt to the agent repeatedly. Each iteration sees its own
 previous work in files and git history.
 
 ```bash
-# Edit PROMPT.md with your task, then:
+# Define your goals in DESIGN.md, then:
 ./scripts/ralph-loop.sh              # 20 iterations (default)
 ./scripts/ralph-loop.sh -n 50        # more iterations
 ./scripts/ralph-loop.sh -s           # inside tmux (HPC / detached)
