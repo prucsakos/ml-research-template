@@ -9,6 +9,7 @@
 #   ./scripts/ralph-loop.sh -n 50                    # custom max iterations
 #   ./scripts/ralph-loop.sh -p my_prompt.md           # custom prompt file
 #   ./scripts/ralph-loop.sh -n 30 -p PROMPT.md -s     # run inside a new tmux session
+#   ./scripts/ralph-loop.sh -f -n 10                   # force all N iterations (ignore DONE)
 #
 # The loop feeds the same prompt to Claude each iteration. Claude sees its own
 # previous work in files and git history, building incrementally toward the goal.
@@ -16,33 +17,37 @@
 # To signal completion, the prompt should instruct Claude to output:
 #   <promise>DONE</promise>
 # when the task is truly finished to specification.
+# Use -f to ignore the completion promise and always run all N iterations.
 
 set -euo pipefail
 
 # --- Defaults ---
 MAX_ITERATIONS=20
 PROMPT_FILE="PROMPT.md"
+FORCE_ALL=false
 USE_TMUX=false
 TMUX_SESSION="ralph"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # --- Parse args ---
 usage() {
-    echo "Usage: $0 [-n max_iterations] [-p prompt_file] [-s] [-t session_name]"
+    echo "Usage: $0 [-n max_iterations] [-p prompt_file] [-f] [-s] [-t session_name]"
     echo ""
     echo "Options:"
     echo "  -n  Max iterations (default: $MAX_ITERATIONS)"
     echo "  -p  Prompt file (default: $PROMPT_FILE)"
+    echo "  -f  Force all N iterations (ignore completion promise)"
     echo "  -s  Run inside a new tmux session (for HPC/detached use)"
     echo "  -t  tmux session name (default: $TMUX_SESSION)"
     echo "  -h  Show this help"
     exit 1
 }
 
-while getopts "n:p:st:h" opt; do
+while getopts "n:p:fst:h" opt; do
     case $opt in
         n) MAX_ITERATIONS="$OPTARG" ;;
         p) PROMPT_FILE="$OPTARG" ;;
+        f) FORCE_ALL=true ;;
         s) USE_TMUX=true ;;
         t) TMUX_SESSION="$OPTARG" ;;
         h) usage ;;
@@ -67,6 +72,7 @@ run_ralph() {
     echo "Project:    $PROJECT_DIR"
     echo "Prompt:     $PROMPT_FILE"
     echo "Max iter:   $MAX_ITERATIONS"
+    echo "Force all:  $FORCE_ALL"
     echo "Started:    $(date -Iseconds)"
     echo "==================="
     echo ""
@@ -85,7 +91,7 @@ run_ralph() {
         echo "$OUTPUT"
 
         # Check for rate limit / usage cap errors and wait if hit
-        if echo "$OUTPUT" | grep -qiE 'rate.?limit|usage.?limit|too many requests|overloaded|429|capacity|quota'; then
+        if echo "$OUTPUT" | grep -qiE 'rate.?limit|usage.?limit|hit.?your.?limit|too many requests|overloaded|429|capacity|quota'; then
             WAIT_SECONDS=3600  # 1 hour
             echo ""
             echo "=== RATE LIMIT DETECTED at iteration $i ==="
@@ -96,8 +102,8 @@ run_ralph() {
             continue
         fi
 
-        # Check for completion promise
-        if echo "$OUTPUT" | grep -q '<promise>DONE</promise>'; then
+        # Check for completion promise (skip if -f flag is set)
+        if [[ "$FORCE_ALL" == false ]] && echo "$OUTPUT" | grep -q '<promise>DONE</promise>'; then
             echo ""
             echo "=== COMPLETION DETECTED at iteration $i ==="
             echo "Finished: $(date -Iseconds)"
@@ -119,7 +125,9 @@ if [[ "$USE_TMUX" == true ]]; then
     echo "Launching Ralph loop in tmux session: $TMUX_SESSION"
     echo "Detach with: Ctrl-b d"
     echo "Reattach with: tmux attach -t $TMUX_SESSION"
-    tmux new-session -d -s "$TMUX_SESSION" "cd $PROJECT_DIR && bash $0 -n $MAX_ITERATIONS -p $PROMPT_FILE; exec bash"
+    FORCE_FLAG=""
+    [[ "$FORCE_ALL" == true ]] && FORCE_FLAG="-f"
+    tmux new-session -d -s "$TMUX_SESSION" "cd $PROJECT_DIR && bash $0 -n $MAX_ITERATIONS -p $PROMPT_FILE $FORCE_FLAG; exec bash"
     tmux attach -t "$TMUX_SESSION"
 else
     run_ralph
