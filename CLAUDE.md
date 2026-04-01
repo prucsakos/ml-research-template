@@ -6,8 +6,9 @@ ground truth, targets, architecture — lives in **DESIGN.md**.
 
 ## Quick reference
 
-- **Project context**: `DESIGN.md` (read this first)
-- **Progress log**: `PROGRESS.md`
+- **Project context**: `DESIGN.md` (read this first — orchestrator manages this file)
+- **Results journal**: `RESULTS.md` (findings, introspections, SOTA analysis, novelty)
+- **Progress log**: `PROGRESS.md` (lean working memory — max ~200 lines)
 - **Experiments**: `experiments/`
 - **API tokens**: `.env` (never commit this file)
 
@@ -46,8 +47,9 @@ pip install -r requirements.txt
 ```
 project/
 ├── CLAUDE.md              # Development rules and conventions (this file)
-├── DESIGN.md              # Research design, hypotheses, methodology, targets
-├── PROGRESS.md            # Running log of findings, decisions, failed approaches
+├── DESIGN.md              # Research design, hypotheses, methodology, targets (orchestrator-managed)
+├── RESULTS.md             # Research journal: findings, introspections, SOTA, novelty classification
+├── PROGRESS.md            # Lean working memory: status, tasks, failed approaches (~200 lines max)
 ├── README.md              # Public-facing description for publication/sharing
 ├── LICENSE
 ├── requirements.txt       # or environment.yml
@@ -238,10 +240,17 @@ Beyond "write code" agents, use specialized agents for distinct concerns:
   runtime and memory usage.
 - **Code quality agent**: Looks for duplicated code, inconsistent patterns,
   missing type hints, unclear variable names. Refactors.
-- **Documentation agent**: Keeps PROGRESS.md, docstrings, and DESIGN.md
-  in sync with actual code.
-- **Literature agent**: Reviews related work, checks if methods align with
-  state-of-the-art, flags relevant new papers.
+- **Documentation agent**: Keeps PROGRESS.md, RESULTS.md, docstrings, and
+  DESIGN.md in sync with actual code.
+- **Literature agent**: Actively searches the web (arXiv, Semantic Scholar,
+  conference proceedings) for current state-of-the-art methods, benchmarks,
+  and evaluation frameworks relevant to the project's goals. Compares SOTA
+  approaches against the project's current methodology and flags gaps,
+  superior alternatives, or complementary techniques. This is critical to
+  avoid reinventing solved problems or pursuing suboptimal solutions.
+  Specifically: reviews related work, checks if methods align with SOTA,
+  flags relevant new papers, and recommends concrete methodology changes
+  when the literature suggests a better path.
 - **Research agent**: The scientific lead. Does not write code. Runs the
   introspection protocol after each experiment — questions why results look
   the way they do, hunts for counterexamples, and rules out trivial
@@ -287,7 +296,8 @@ Every result must be traceable back to the exact code and config that produced i
 
 - Log metrics to a structured format (JSON, CSV) inside `results/`.
 - Log hyperparameters alongside metrics so they are always co-located.
-- Summarize key results in PROGRESS.md with a pointer to the experiment folder.
+- Summarize key results in RESULTS.md with a pointer to the experiment folder.
+  Add a 1-line summary with metrics to PROGRESS.md.
 
 ---
 
@@ -303,32 +313,17 @@ Every result must be traceable back to the exact code and config that produced i
 - Track which experiment each figure comes from in a comment at the top of
   the figure script (e.g., `# Source: exp_003_dropout_ablation`).
 
-### Results reproducibility file
+### Paper results.tex
 
 All experimental results referenced in the paper must be recorded in
 `paper/results.tex` (included by `main.tex` via `\input{results}`).
-This file serves as the single source of truth for all reported numbers.
-
-**Each result entry must include:**
-- The git commit hash that produced the result.
-- The exact reproduction command (`run.sh` path or CLI invocation).
-- The experiment folder it came from.
-
-Format:
-```latex
-% --- exp_001_baseline ---
-% Commit: a1b2c3d
-% Reproduce: cd experiments/exp_001_baseline && bash run.sh
-\newcommand{\expOneAccuracy}{94.2\%}
-\newcommand{\expOneF1}{0.91}
-```
+This file is the LaTeX macro layer for traceable numbers.
 
 **Rules:**
 - Never hardcode numbers in `main.tex`. Always use commands defined in
   `results.tex` (e.g., `\expOneAccuracy`).
-- When results update, update `results.tex` with the new commit hash and
-  values. The paper body stays unchanged.
-- This ensures every number in the paper is traceable to a specific commit.
+- Each entry must include the git commit hash and reproduction command.
+- When results update, update both `results.tex` and `RESULTS.md`.
 
 ---
 
@@ -417,12 +412,13 @@ move on immediately. Stop and interrogate your own findings.
 
 ### Recording introspection
 
-Document all introspection in PROGRESS.md under a dedicated section per
+Document all introspection in **RESULTS.md** under a dedicated section per
 experiment or research question:
 
 ```markdown
 ## Introspection: <hypothesis or question>
 - **Finding:** Confirmed / Denied / Partially confirmed
+- **Novelty:** N0–N5 (see §Novelty classification below)
 - **Why this result:** <mechanistic explanation or hypothesis>
 - **Counterexamples:** <conditions where it breaks down>
 - **Trivial explanation ruled out?** Yes/No — <reasoning>
@@ -433,26 +429,34 @@ experiment or research question:
   3. <new question>
 ```
 
-Also update DESIGN.md to append newly generated questions under a
-`## Emergent research questions` section, so future sessions can see them.
+Also update DESIGN.md to append newly generated questions under the
+`## Emergent research questions` section, and update Status/Resolved
+fields on any questions or hypotheses that were addressed.
 
 ---
 
 ## Progress tracking
 
-The three key documents serve distinct roles:
+The four key documents serve distinct roles:
 
 - **CLAUDE.md** (this file): Stable rules and conventions. Project-agnostic.
 - **DESIGN.md**: Project-specific context — research questions, hypotheses,
-  ground truth, targets, architecture. Updated when the research direction evolves.
-- **PROGRESS.md**: Living log of what's done, what's next, what failed.
-  Updated after every unit of work.
+  ground truth, targets, architecture. The user seeds it; the orchestrator
+  manages it going forward (updates Status/Resolved fields, appends emergent
+  questions, adds further directions).
+- **RESULTS.md**: Research journal — experiment findings, introspections,
+  literature alignment, novelty classification. This is where deep analysis
+  lives. Updated after each experiment or literature review.
+- **PROGRESS.md**: Lean working memory — current status, task lists, failed
+  approaches, discovered tasks. **Max ~200 lines.** No introspections, no
+  literature analysis, no verbose findings. Updated after every unit of work.
+  Points to RESULTS.md for details.
 
 ### PROGRESS.md format
 
 ```markdown
 ## Current status
-<!-- What's working, what's broken, what's next -->
+<!-- 5-10 lines: what's working, what's broken, what's next -->
 
 ## Completed
 - [x] 2026-03-15: exp_001_baseline — baseline reproduces published results
@@ -467,6 +471,93 @@ The three key documents serve distinct roles:
 ## Discovered tasks
 - Need to investigate W
 ```
+
+**Rules for PROGRESS.md:**
+- Keep it under ~200 lines. If it grows beyond that, move content to RESULTS.md.
+- No experiment introspections — those go in RESULTS.md.
+- No literature analysis — that goes in RESULTS.md.
+- Summarize experiment outcomes in 1-3 lines with a pointer: "See RESULTS.md §exp_002".
+- Record key metrics inline but not detailed analysis.
+
+### RESULTS.md format
+
+```markdown
+## Experiment results
+
+### exp_001_baseline (2026-03-15)
+**Summary:** <1-3 sentence summary of findings>
+**Novelty:** N2 — Extends (justification)
+
+#### Introspection
+<full introspection per CLAUDE.md §Research introspection>
+
+### exp_002_larger_lr (2026-03-18)
+...
+
+## Literature alignment
+### <Topic area>
+**SOTA landscape:** ...
+**Assessment:** ...
+**Our position:** ...
+
+## Novelty classification summary
+| Finding | Category | Justification |
+|---------|----------|---------------|
+| ... | N0–N5 | ... |
+```
+
+### Novelty classification
+
+Every research finding and contribution must be classified on the following
+scale. Record the classification in RESULTS.md alongside each finding.
+
+| Code | Label | Meaning |
+|------|-------|---------|
+| **N0** | Confirmatory | Validates known results in a new setting; no new insight |
+| **N1** | Incremental | Small improvement or refinement over known approaches |
+| **N2** | Extends | Builds meaningfully on existing work — new axis, domain, or method variant |
+| **N3** | Orthogonal | Addresses the same problem from a completely different angle |
+| **N4** | Novel | No prior work addresses this; first result of its kind |
+| **N5** | Breakthrough | Fundamentally changes understanding or opens a new research direction |
+
+**Rules:**
+- Every introspection must include a `**Novelty:** Nx — Label` line.
+- The novelty classification summary table in RESULTS.md must stay current.
+- Be honest: most findings are N0–N2. N4+ requires strong justification.
+  Overclaiming novelty damages credibility.
+- The orchestrator and research agent must review novelty classifications
+  during introspection — challenge any N3+ rating with "could this be N2?"
+
+### DESIGN.md management
+
+DESIGN.md is the single source of truth for research direction. The user
+seeds it with initial goals, questions, and hypotheses. The orchestrator
+manages it going forward:
+
+**Status fields on every question and hypothesis:**
+```markdown
+**Q1 (question name):**
+**Status:** OPEN | PARTIAL | ANSWERED
+**Resolved:** <one-paragraph answer when resolved, empty when open>
+
+<original question text>
+```
+
+- `OPEN` — not yet investigated
+- `PARTIAL` — evidence gathered but question not fully resolved
+- `ANSWERED` — sufficient evidence to provide a resolution
+
+**Orchestrator responsibilities for DESIGN.md:**
+- Update `Status:` and `Resolved:` fields as evidence accumulates.
+- Append new emergent questions (EQ*) under `## Emergent research questions`.
+- Add `## Further directions` sections when new research threads emerge.
+- Never delete or substantially rewrite user-authored sections — only annotate.
+
+### Results reproducibility file
+
+`paper/results.tex` remains the LaTeX macro file for paper numbers (traceable
+to git commits). RESULTS.md is the human-readable research journal. Both must
+stay in sync — when results update, update both.
 
 ---
 

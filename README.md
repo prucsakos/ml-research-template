@@ -48,10 +48,11 @@ pip install -r requirements.txt  # customize for your project
 
 ### Customize for your project
 
-1. **`DESIGN.md`** &mdash; Write your research design, goals, success criteria, methodology, and architecture. This is the main file you edit.
+1. **`DESIGN.md`** &mdash; Write your research design, goals, success criteria, methodology, and architecture. The orchestrator manages Status/Resolved fields going forward.
 2. **`CLAUDE.md`** &mdash; Development conventions for agents. Generally leave as-is.
-3. **`PROGRESS.md`** &mdash; Agents maintain this automatically. Optionally seed with initial tasks.
-4. **`PROMPT.md`** &mdash; Workflow skeleton for agent loops. No need to edit.
+3. **`RESULTS.md`** &mdash; Research journal. Agents write findings, introspections, and novelty classifications here.
+4. **`PROGRESS.md`** &mdash; Lean working memory (~200 lines max). Agents maintain this automatically.
+5. **`PROMPT.md`** &mdash; Workflow skeleton for agent loops. No need to edit.
 
 ---
 
@@ -60,8 +61,9 @@ pip install -r requirements.txt  # customize for your project
 ```
 project/
 ├── CLAUDE.md              # Agent instructions and development conventions
-├── DESIGN.md              # Research design, hypotheses, methodology
-├── PROGRESS.md            # Running log of findings and decisions
+├── DESIGN.md              # Research design, hypotheses, methodology (orchestrator-managed)
+├── RESULTS.md             # Research journal: findings, introspections, novelty classification
+├── PROGRESS.md            # Lean working memory: status, tasks, failed approaches
 ├── PROMPT.md              # Task definition for autonomous agent loops
 ├── README.md              # This file
 ├── requirements.txt       # Python dependencies
@@ -86,8 +88,9 @@ project/
 | File | Role | Update frequency |
 |------|------|-----------------|
 | `CLAUDE.md` | Stable rules and conventions | Rarely |
-| `DESIGN.md` | Research design and methodology | When direction evolves |
-| `PROGRESS.md` | What's done, what's next, what failed | After every unit of work |
+| `DESIGN.md` | Research design and methodology | Orchestrator manages going forward |
+| `RESULTS.md` | Research journal, introspections, novelty | After each experiment |
+| `PROGRESS.md` | Lean working memory (~200 lines max) | After every unit of work |
 | `PROMPT.md` | Workflow skeleton for agent loops | Rarely (if ever) |
 
 ---

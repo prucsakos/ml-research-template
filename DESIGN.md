@@ -6,17 +6,30 @@
 
 ## Research questions
 
-<!-- What are you trying to answer? -->
+<!-- What are you trying to answer? The orchestrator will manage Status/Resolved
+     fields as evidence accumulates. Format each question as shown below. -->
 
-1.
-2.
+**Q1 (question name):**
+**Status:** OPEN
+**Resolved:**
+
+<!-- Question text here -->
+
+**Q2 (question name):**
+**Status:** OPEN
+**Resolved:**
+
+<!-- Question text here -->
 
 ## Hypotheses
 
-<!-- What do you expect to find? -->
+<!-- What do you expect to find? Same Status/Resolved format as questions. -->
 
-1.
-2.
+**H1 (hypothesis name):**
+**Status:** OPEN
+**Resolved:**
+
+<!-- Hypothesis text here -->
 
 ## Ground truth / oracle
 
@@ -51,6 +64,14 @@
 <!-- Record important choices and their rationale. E.g.:
      - "Using X over Y because Z"
      - "Not implementing W because it's out of scope" -->
+
+## Emergent research questions
+
+<!-- This section is populated during the research process. After confirming
+     or denying each hypothesis and answering each research question, the
+     research agent records follow-up questions here. These are questions
+     that emerged from the findings — not planned upfront, but discovered
+     through introspection on results. See CLAUDE.md §Research introspection. -->
 
 ## References
 
